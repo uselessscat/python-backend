@@ -2,7 +2,7 @@
 title: Python Backend
 ---
 {{< blocks/cover title="La guía definitiva para dominar el desarrollo backend con Python" image_anchor="top" height="full" >}}
-<a class="btn btn-lg btn-primary me-3 mb-4" href="/guide/">
+<a class="btn btn-lg btn-primary me-3 mb-4" href="{{< relref "guide" >}}">
   Aprender! <i class="fas fa-arrow-alt-circle-right ms-2"></i>
 </a>
 <a class="btn btn-lg btn-secondary me-3 mb-4" href="https://github.com/uselessscat/python-backend">
@@ -25,8 +25,10 @@ Accede y contribuye al contenido en [GitHub](https://github.com/uselessscat/pyth
 Cada tutorial, cada snippet de código y cada proyecto está abierto a tu acceso, contribución y mejora.
 {{% /blocks/feature %}}
 
-{{% blocks/feature icon="fa fa-screwdriver-wrench" title="Aprende Construyendo!" url="/guide" %}}
+{{% blocks/feature icon="fa fa-screwdriver-wrench" title="Aprende Construyendo!" %}}
 Esta guía te invita a sumergirte en la aplicación práctica de conceptos, cada sección contiene problemas para ejercitar y repasar lo aprendido.
+
+[Ir a la guía]({{< relref "guide" >}})
 {{% /blocks/feature %}}
 
 {{% blocks/feature icon="fa fa-bolt-lightning" title="Siempre actualizado!" %}}

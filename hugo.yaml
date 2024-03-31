@@ -1,6 +1,6 @@
-baseURL: '/'
-languageCode: 'es-cl'
-title: 'Python Backend'
+baseURL: https://uselessscat.github.io/python-backend/
+languageCode: es-cl
+title: Python Backend
 
 contentDir: content/es
 defaultContentLanguage: es
@@ -43,8 +43,7 @@ params:
     pygmentsUseClasses: false
     pygmentsUseClassic: false
 
-  url_latest_version: 'https://example.com'
-  github_repo: 'https://github.com/uselessscat/python-backend'
+  github_repo: https://github.com/uselessscat/python-backend
   github_branch: main
 
   offlineSearch: false
@@ -77,4 +76,4 @@ module:
     min: "0.123.0"
 
   imports:
-    - path: "github.com/google/docsy"
+    - path: github.com/google/docsy

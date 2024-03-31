@@ -23,27 +23,27 @@ Sumérgete en un mundo de aprendizaje interactivo, recursos detallados y proyect
 Desde la sintaxis básica hasta conceptos avanzados, crea una sólida base de programación.
 {{% /blocks/feature %}}
 
-{{% blocks/feature icon="fa fa-screwdriver-wrench" title="Desarrollo Web" %}}
+{{% blocks/feature icon="fa fa-globe" title="Desarrollo Web" %}}
 Profundiza en frameworks como Django y Flask para crear aplicaciones web robustas.
 {{% /blocks/feature %}}
 
-{{% blocks/feature icon="fa fa-bolt-lightning" title="Bases de Datos" %}}
+{{% blocks/feature icon="fa fa-database" title="Bases de Datos" %}}
 Explora la integración de Python con SQL y NoSQL para un manejo eficaz de datos.
 {{% /blocks/feature %}}
 
-{{% blocks/feature icon="fa fa-screwdriver-wrench" title="Git y Control de Versiones" %}}
+{{% blocks/feature icon="fab fa-git-alt" title="Git y Control de Versiones" %}}
 Aprende a colaborar y mantener el código eficientemente con Git.
 {{% /blocks/feature %}}
 
-{{% blocks/feature icon="fa fa-bolt-lightning" title="Infraestructura y CI/CD" %}}
+{{% blocks/feature icon="fa fa-server" title="Infraestructura y CI/CD" %}}
 Domina Docker, Kubernetes y herramientas de CI/CD para despliegues eficientes.
 {{% /blocks/feature %}}
 
-{{% blocks/feature icon="fa fa-screwdriver-wrench" title="Linux" %}}
+{{% blocks/feature icon="fab fa-linux" title="Linux" %}}
 Adquiere habilidades fundamentales en Linux, esencial para todo desarrollador backend.
 {{% /blocks/feature %}}
 
-{{% blocks/feature icon="fa fa-bolt-lightning" title="Data Science y ML" %}}
+{{% blocks/feature icon="fa fa-chart-line" title="Data Science y ML" %}}
 Introdúcete en Data Science y Machine Learning con bibliotecas de Python.
 {{% /blocks/feature %}}
 </div>
