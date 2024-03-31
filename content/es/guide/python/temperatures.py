@@ -2,11 +2,11 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 
-n_dias = 15  
-horas_por_dia = 26  
+n_dias = 15
+horas_por_dia = 26
 temp_promedio_marte = -20
-amplitud_temp = 20  
-ruido = 2  
+amplitud_temp = 20
+ruido = 2
 
 horas = np.arange(0, n_dias * horas_por_dia)
 variaciones_temp = amplitud_temp * np.sin(2 * np.pi * (horas % horas_por_dia) / horas_por_dia)

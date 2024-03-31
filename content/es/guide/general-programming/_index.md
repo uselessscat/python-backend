@@ -1,6 +1,8 @@
-# General programming topics
-
-1. design patterns
+---
+title: Temas generales de programación
+weight: 4
+---
+1. patrones diseño
 2. arquitectural styles
     1. cqrs
     2. mvc / mvt / mvp / mvvm / viper / bloc

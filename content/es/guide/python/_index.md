@@ -1,5 +1,7 @@
-# 1. Python
-
+---
+title: Python
+weight: 2
+---
 1. basic data types
    1. [variables and assignments](1.1-variables_assignments.md)
    2. [booleans](1.2-booleans.md)
@@ -140,52 +142,70 @@
     19. callables
     20. type() and types module
     21. dynamic creation
-    22. metaclasses
-    23. dataclasses
-    24. descriptors
-    25. generics
-    26. abstract base classes
-    27. protocols
-    28. mixins
-    29. casting
-17. decorators
+    22. dataclasses
+    23. generics
+    24. abstract base classes
+    25. protocols
+    26. mixins
+    27. casting
+    28. duck typing
+17. metaprogramming
+    1. metaclasses
+    2. descriptors
+18. decorators
     1. functions
     2. classes
-18. context managers
+19. context managers
     1. with
     2. contextlib
-19. debugging
+20. debugging
     1. pdb
     2. ide
     3. remote
     4. stack traces, stack frames, traceback, faulthandler
     5. trace
     6. inspect
-20. monitoring
+21. monitoring
     1. sys.monitoring
     2. sys.settrace
     3. sentry
-21. files
+22. files
     1. pathlib
     2. open, close, read, write, append, seek
-    3. basic formats, json, csv, sqlite3, toml, config, html, xml
+    3. basic formats
+       1. config
+       2. env
+       3. toml
+       4. csv
+       5. json
+       6. sqlite3
     4. serialization
        1. struct
        2. codecs
        3. pickle
        4. marshal
-       5. base64
+       5. base64 / others
     5. temporary files
     6. compression
-22. garbage collection
+23. specific files
+    1. markup
+    2. document and ebook
+    3. calendar
+    4. mailing
+    5. image
+    6. audio
+    7. video
+    8. security
+    9. geographic
+24. garbage collection
     1. reference counting
     2. gc module
     3. weakref
-23. benchmarking and profiling
+25. benchmarking and profiling
     1. timeit
     2. cprofile / profile
     3. memory
-24. async and concurrency
+26. async and concurrency
     1. threading
     2. multiprocessing
     3. concurrent
@@ -198,7 +218,7 @@
        5. event loop
        6. greenlet, uvloop
        7. anyio, trio
-25. functional programming
+27. functional programming
     1. map, filter, reduce
     2. partial
     3. itertools
@@ -207,7 +227,7 @@
     6. higher order functions
     7. closures
     8. currying
-26. networking
+28. networking
     1. tcp basics
     2. ipaddress
     3. sockets
@@ -218,43 +238,54 @@
     8. email and mailing
     9. ftp
     10. wsgi and asgi
-27. i18n and l10n
+29. i18n and l10n
     1. gettext
     2. locale
-28. cli apps
+30. cli apps
     1. argparse
     2. click / typer
     3. rich
     4. python-fire
-29. graphical apps
+31. graphical apps
     1. tk
     2. pyqt
-30. type hints
+32. type hints
     1. annotations
     2. typing module
     3. type aliases
     4. type vars
     5. protocols
-31. general tools
+33. general tools
     1. venv/virtualenv
     2. jupyter and ipython
     3. pip and requirements.txt
     4. poetry and pyproject.toml
     5. conda
-32. documentation
+34. documentation
     1. docstrings
     2. docstrings formats
     3. doctest
-    4. sphinx, readthedocs, mkdocs, pdoc3
-33. testing
-    1. pytest
-    2. coverage
-    3. testing types
-    4. other testing tools
+    4. docs renders
+       1. sphinx
+       2. readthedocs
+       3. mkdocs
+       4. pdoc3
+35. testing
+    1. unittest
+    2. pytest
+    3. coverage
+    4. testing types
+       1. unit
+       2. integration
+       3. functional
+       4. acceptance
+       5. regression
+       6. load / stress
+    5. other testing tools
        1. hypothesis
        2. faker
        3. mock, patch
-34. code quality tools
+36. code quality tools
     1. flake8, autopep8
     2. mypy
     3. bandit
@@ -263,38 +294,61 @@
     6. ruff
     7. radon
     8. pyupgrade
-35. security
-    1. hashlib
-    2. secrets
-    3. ssl
-    4. cryptography
-36. interpreters and distribution
-    1. cpython, command line
-    2. build python from source
+37. security
+    1. standard library
+       1. hashlib
+       2. secrets
+       3. ssl
+    2. third party
+       1. bcrypt
+       2. passlib
+       3. cryptography
+       4. pyjwt
+       5. argon2
+    3. common algorithms
+       1. symmetric
+       2. asymmetric
+       3. hashing
+       4. key derivation
+       5. digital signatures
+       6. certificates
+38. implementations and distribution
+    1. build python from source
+    2. cpython, command line
     3. pypy
     4. cython
     5. codon
     6. micropython
-    7. pyinstaller
-    8. nuitka
-37. packaging
-    1. setuptools and setup.py
-    2. setup.cfg
-    3. pyproject.toml
-    4. wheel
-    5. twine
-    6. pypi
-38. python compiler, interpreter
+    7. binary
+       1. pyinstaller
+       2. nuitka
+    8. web
+       1. pyscripy
+       2. pyodide
+       3. brython
+39. packaging
+    1. packaging process
+       1. setuptools and setup.py
+       2. setup.cfg
+       3. pyproject.toml
+       4. wheel
+       5. twine
+       6. flit
+    2. package indexes
+       1. pypi
+       2. test.pypi
+       3. pypiserver
+40. python compiler, interpreter
     1. ast
     2. compiler
     3. dis
     4. tokenize
     5. lexical analysis
-39. data model
+41. data model
     1. ctypes
-40. execution model
-41. python C model
-42. extensions
+42. execution model
+43. python C model
+44. extensions
     1. C
     2. rust
     3. protocols

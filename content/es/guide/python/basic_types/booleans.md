@@ -1,5 +1,7 @@
-# Booleans
-
+---
+title: Booleanos
+weight: 1
+---
 ## Recursos
 
 - https://docs.python.org/3/reference/datamodel.html#numbers-integral

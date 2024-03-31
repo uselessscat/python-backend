@@ -1,5 +1,7 @@
-# Comprehensions
-
+---
+title: Comprensiones
+weight: 7
+---
 Crear las siguientes funciones
 
 1. **List Comprehension:**

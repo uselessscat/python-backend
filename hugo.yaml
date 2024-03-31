@@ -1,0 +1,80 @@
+baseURL: '/'
+languageCode: 'es-cl'
+title: 'Python Backend'
+
+contentDir: content/es
+defaultContentLanguage: es
+defaultContentLanguageInSubdir: false
+enableMissingTranslationPlaceholders: true
+
+languages:
+  es:
+    languageName: Español
+    contentDir: content/es
+
+enableRobotsTXT: true
+enableGitInfo: true
+
+taxonomies:
+  tag: tags
+  category: categories
+
+markup:
+  goldmark:
+    parser:
+      attribute:
+        block: true
+    renderer:
+      unsafe: true
+
+params:
+  taxonomy:
+    taxonomyCloud:
+      - tags
+      - categories
+    taxonomyCloudTitle:
+      - Tag Cloud
+      - Categories
+    taxonomyPageHeader:
+      - tags
+      - categories
+
+    pygmentsCodeFences: true
+    pygmentsUseClasses: false
+    pygmentsUseClassic: false
+
+  url_latest_version: 'https://example.com'
+  github_repo: 'https://github.com/uselessscat/python-backend'
+  github_branch: main
+
+  offlineSearch: false
+
+  copyright:
+    authors: >-
+      Uselessscat<br>
+      | Contents under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0)
+      | Code under [MIT](https://opensource.org/licenses/MIT)
+      |
+    from_year: 2024
+
+  ui:
+    colorModeEnabled: true
+    sidebar_menu_compact: true
+    sidebar_menu_foldable: true
+    sidebar_cache_limit: 10
+    readingtime:
+      enable: true
+
+outputs:
+  section:
+    - HTML
+    - print
+    - RSS
+
+module:
+  hugoVersion:
+    extended: true
+    min: "0.123.0"
+
+  imports:
+    - path: "github.com/google/docsy"

@@ -1,5 +1,7 @@
-# Databases
-
+---
+title: Bases de datos
+weight: 6
+---
 1. Database principles
    1. cap
    2. acid

@@ -1,5 +1,7 @@
-# Web development
-
+---
+title: Desarrollo web
+weight: 5
+---
 1. http
    1. versions 1, 2
    2. methods
@@ -31,10 +33,15 @@
    2. hateoas
    3. graphql
    4. rpc
-      1. grpc
+      1. grpc / protobuf
       2. trift
-   5. soa
-   6. soap
+   5. websockets
+   6. long polling
+   7. sse
+   8. webtransport
+   9. webrtc
+   10. soa
+   11. soap
 7. messaging protocols
    1. mqtt
    2. amqp
@@ -68,3 +75,10 @@
     6. okta
     7. saml
     8. passkeys
+15. mfa
+    1. phone number
+    2. totp/hotp
+    3. push notifications
+    4. biometrics
+    5. hardware tokens
+    6. backup codes
