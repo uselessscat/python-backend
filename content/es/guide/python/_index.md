@@ -1,14 +1,14 @@
 ---
-title: Python
+title: 1. Python
 weight: 2
 ---
 1. basic data types
-   1. [variables and assignments](1.1-variables_assignments.md)
-   2. [booleans](1.2-booleans.md)
+   1. [variables and assignments](guide/python/basic_types/variables_assignments)
+   2. [booleans](guide/python/basic_types/booleans)
    3. numeric
       1. int
-      2. [float](1.3.2-float.md), decimal, fractions
-      3. complex
+      2. [float, decimal, fractions](guide/python/basic_types/float)
+      3. [complex](guide/python/basic_types/complex)
    4. strings, multiline strings, raw strings
    5. objects
    6. none and sentinel values
@@ -186,7 +186,15 @@ weight: 2
        4. marshal
        5. base64 / others
     5. temporary files
-    6. compression
+    6. general purpose compression
+       1. zip/deflate
+       2. gzip
+       3. bzip2
+       4. lzma/lzma2
+       5. lz4
+       6. xz
+       7. zstd
+       8. tar
 23. specific files
     1. markup
     2. document and ebook

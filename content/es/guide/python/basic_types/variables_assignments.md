@@ -1,7 +1,9 @@
 ---
-title: Variables y Asignaciones
+title: 1. Variables y Asignaciones
 weight: 1
 ---
+## Actividades
+
 1. **Definición de Variables y Asignación**: Define cinco variables con tipos de datos diferentes (int, float, str, list, dict) usando el operador de asignación (`=`). Asegúrate de que los nombres de las variables sean descriptivos y sigan las convenciones de Python.
 2. **Asignaciones:**
    1. **Aplicación Creativa del Operador de Asignación**: Utiliza el operador de asignación para realizar una operación de intercambio de valores entre dos variables sin utilizar una variable temporal.

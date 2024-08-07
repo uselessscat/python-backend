@@ -1,7 +1,10 @@
 ---
-title: Números complejos
-weight: 1
+title: 3. Complejos
+weight: 3
 ---
+
+## Actividades
+
 1. Implementa una clase ComplexNumber que represente un número complejo.
    1. La clase debe tener métodos para sumar, restar, multiplicar y dividir números complejos.
    2. Incluye un método para obtener el módulo y el argumento de un número complejo.

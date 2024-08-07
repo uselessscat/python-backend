@@ -67,14 +67,15 @@ weight: 5
        2. firewall
     3. owasp
 14. authentication
-    1. basic / jwt
-    2. oauth / oidc
-    3. api key
-    4. sso
-    5. otp
-    6. okta
-    7. saml
-    8. passkeys
+    1. basic
+    2. jwt
+    3. oauth / oidc
+    4. api key
+    5. sso
+    6. otp
+    7. okta
+    8. saml
+    9. passkeys
 15. mfa
     1. phone number
     2. totp/hotp

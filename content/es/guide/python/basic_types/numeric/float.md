@@ -1,7 +1,9 @@
 ---
-title: Aritmética de punto flotante
-weight: 1
+title: 2. Decimales
+weight: 2
 ---
+## Actividades
+
 1. Lee el archivo temperatures.csv que representa las temperaturas en un planeta X.
 2. Ingresa por input valores flotantes de temperatura y epsilon e interpreta usando float.
    1. Busca la temperatura mas cercana al valor ingresado usando epsilon e imprime la hora en la que se leyó ese valor, si hay multiple valores iguales imprime todos.

@@ -1,6 +1,6 @@
 ---
-title: Booleanos
-weight: 1
+title: 2. Booleanos
+weight: 2
 ---
 ## Recursos
 
