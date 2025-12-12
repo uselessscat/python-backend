@@ -1,0 +1,53 @@
+---
+import type { GuideTreeNode } from "@/utils/guideTree";
+
+const {
+  nodes,
+  level = 0,
+  currentPath,
+} = Astro.props as {
+  nodes: GuideTreeNode[];
+  level?: number;
+  currentPath: string;
+};
+---
+
+{
+  nodes.map((node) => (
+    <li>
+      {node.url ? (
+        <a
+          href={node.url}
+          class={[
+            "block truncate hover:underline",
+            currentPath === node.url
+              ? "text-primary font-semibold"
+              : "text-muted-foreground",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          style={`padding-left:${level * 12}px`}
+        >
+          {node.title}
+        </a>
+      ) : (
+        <span
+          class="block truncate text-muted-foreground"
+          style={`padding-left:${level * 12}px`}
+        >
+          {node.title}
+        </span>
+      )}
+
+      {node.children.length > 0 && (
+        <ul class="space-y-1">
+          <Astro.self
+            nodes={node.children}
+            level={level + 1}
+            currentPath={currentPath}
+          />
+        </ul>
+      )}
+    </li>
+  ))
+}

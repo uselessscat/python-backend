@@ -1,0 +1,910 @@
+# Gestión de entornos y toolchains en Python
+
+La gestión de entornos en Python trasciende la simple instalación de un intérprete: incluye el ciclo completo de ejecución, empaquetado, dependencias y compilación de extensiones nativas. Comprender cómo interactúan el runtime, los gestores de paquetes, el sistema operativo y las toolchains es esencial para lograr entornos reproducibles, aislados y eficientes tanto en desarrollo como en producción. Esta guía cubre desde la instalación básica hasta detalles de ABI, wheels y PEP 668.
+
+## Conceptos clave
+
+- **Runtime:** ejecutable binario de Python (por ejemplo, `python`, `python3`, `python.exe`) que ejecuta bytecode sobre la Máquina Virtual de Python (PVM), junto con su librería estándar.
+- **Toolchain:** conjunto de compiladores, enlazadores, headers y utilidades (por ejemplo, `gcc`, `clang`, `cl.exe`, `make`) necesarios para compilar extensiones C/C++ y construir wheels.
+- **Wheel:** formato estándar de distribución binaria (PEP 427) que contiene código ya compilado, listo para ser instalado sin compilar en el sistema destino. ([packaging.python.org][1])
+- **sdist:** distribución de código fuente (`.tar.gz`, `.zip`) que requiere toolchain local para compilar extensiones antes de instalarse.
+- **ABI (Application Binary Interface):** contrato binario que define cómo se representan datos y cómo se llaman funciones a nivel máquina; determina si una extensión compilada es compatible con una versión/plataforma concreta de Python.
+- **Entorno virtual:** ámbito aislado (directorio) con su propio intérprete y espacio de paquetes, creado con `venv`, `virtualenv` o `conda`, que evita conflictos con la instalación global. ([Python documentation][2])
+- **Gestor de paquetes:** herramienta que instala, actualiza y elimina distribuciones Python (por ejemplo, `pip`, `conda`), resolviendo dependencias desde índices como PyPI o repositorios binarios. ([pip.pypa.io][3])
+- **Entorno externamente gestionado (PEP 668):** instalación de Python marcada como administrada por el sistema (por ejemplo, por la distribución Linux), donde herramientas como `pip` no deben modificar el entorno global y se exige el uso de entornos virtuales. ([Python Enhancement Proposals (PEPs)][4])
+
+---
+
+## Arquitectura del ecosistema Python
+
+La infraestructura de Python puede verse como capas que cooperan:
+
+| |
+| - |
+| Código del proyecto (app, scripts) |
+| Paquetes Python (pip/conda, wheels, sdist) |
+| Intérprete (runtime) + stdlib (CPython) |
+| Toolchain nativo (C/C++, sistema) |
+| Sistema operativo (Linux / macOS / Win) |
+
+- El **runtime** ejecuta el bytecode y carga módulos.
+- Los **gestores de paquetes** aprovisionan dependencias (código puro y binarios).
+- El **toolchain** se activa solo cuando no hay wheel compatible y es necesario compilar desde sdist.
+- El **sistema operativo** y su gestor de paquetes pueden marcar el entorno como externamente gestionado (PEP 668), forzando buenas prácticas (venv, `pipx`, `conda`). ([Python Enhancement Proposals (PEPs)][4])
+
+---
+
+## Gestores de runtime e instalación del intérprete
+
+Esta sección cubre cómo instalar y gestionar el ejecutable de Python y sus diferentes versiones.
+
+### Estrategias de aprovisionamiento del runtime
+
+Cinco formas típicas de obtener Python:
+
+1. **Instaladores oficiales:**
+
+    - Descargas desde `python.org`.
+    - Incluyen binarios firmados, `pip` y, en Windows, el Python Launcher (`py`). ([pip.pypa.io][3])
+
+2. **Gestores de paquetes del SO (downstream):**
+
+    - `apt`, `dnf`, `pacman`, `brew`, etc.
+    - Versiones empaquetadas por la distribución, a menudo algo más congeladas pero integradas con el sistema.
+
+3. **Herramientas de versiones (version managers):**
+
+    - `pyenv`, `asdf`, `Python Launcher` en Windows, `conda`, `uv`, etc.
+    - Permiten instalar y alternar entre múltiples versiones de Python sin afectar el sistema.
+
+4. **Compilación desde fuente (source build):**
+
+    - Permite elegir flags como `--enable-optimizations`, `--with-lto` o configurar módulos opcionales.
+    - Útil en servidores, imágenes Docker o cuando se necesitan versiones muy nuevas o específicas.
+
+5. **Contenedores:**
+
+    - Imágenes oficiales de Python en Docker Hub.
+    - Útiles para aislar entornos completos con runtime, toolchain y dependencias.
+
+!!! info "Elección recomendada en desarrollo general"
+
+    - Usuario de escritorio: Instalador oficial (Windows) o gestor de versiones.
+    - Servidores Linux: Contenedores, si no es posible, gestores de versiones o gestores de paquetes del sistema.
+    - Ciencia de datos pesada: distribuciones `conda`/`mamba` que gestionan también dependencias C/C++/Fortran. ([Conda Documentation][5])
+
+### Instaladores oficiales
+
+**Windows:**
+
+Para Windows el instalador oficial es la forma más sencilla de obtener Python.
+
+1. Descargar desde `https://www.python.org/downloads/`. ([PyPI][6])
+2. Marcar:
+   - `Add python.exe to PATH`.
+
+El python launcher permite elegir versión sin preocuparse por rutas:
+
+```powershell
+py -3.10 script.py
+py -3.12 script.py
+py -m pip install numpy
+```
+
+**macOS:**
+
+- Instalador `.pkg` firmado.
+- Suele instalar en `/Library/Frameworks/Python.framework/...` y exponer `python3.X` en `/usr/local/bin`.
+
+### Runtimes instalados con gestores de paquetes del sistema
+
+**Debian/Ubuntu:**
+
+```bash
+sudo apt update
+sudo apt install python3 python3-pip python3-venv
+```
+
+**macOS con Homebrew:**
+
+```bash
+brew install python
+```
+
+La ruta final suele ser `/usr/local/bin/python3` o `/opt/homebrew/bin/python3`.
+
+!!! warning "Python del sistema no es igual a Python de proyectos"
+
+    El intérprete que viene con la distribución suele ser crítico para herramientas internas.
+    No instalar paquetes de proyectos directamente sobre él: usar entornos virtuales o herramientas de versiones (`pyenv`, `conda`).
+
+### Compilación desde fuente (build from source)
+
+Ofrece el máximo control sobre el runtime: optimizaciones, rutas, módulos.
+
+Ejemplo en Linux:
+
+```bash
+# Dependencias de compilación
+sudo apt update
+sudo apt install -y build-essential libssl-dev zlib1g-dev \
+  libncurses5-dev libffi-dev libsqlite3-dev \
+  libreadline-dev libbz2-dev
+
+# Descarga
+wget https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tgz
+tar xzf Python-3.12.3.tgz
+cd Python-3.12.3
+
+# Configuración con PGO + LTO (optimizado)
+./configure --enable-optimizations --with-lto --prefix=$HOME/.local/python-3.12
+
+# Compilación (usar todos los núcleos)
+make -j"$(nproc)"
+
+# Instalación segura (no sobreescribe 'python' del sistema)
+make altinstall
+```
+
+!!! warning "`make install` vs `make altinstall`"
+- `make install` puede sobrescribir `/usr/bin/python` o `/usr/local/bin/python`, rompiendo herramientas que dependen del runtime del sistema.
+- `make altinstall` instala, por ejemplo, `python3.12` sin reemplazar `python3`. Es la opción recomendada para builds paralelos.
+
+### 1.5 Runtimes gestionados por herramientas de versiones
+
+Para proyectos que necesitan probar múltiples versiones (3.8, 3.10, 3.12):
+
+**`pyenv`:**
+
+- Inyecta un directorio `~/.pyenv/shims` al inicio del `PATH`.
+- Los *shims* interceptan llamadas a `python`, `pip`, etc., leen el archivo `.python-version` del directorio y ejecutan el binario apropiado.
+
+Ejemplo mínimo:
+
+```bash
+pyenv install 3.12.3
+pyenv install 3.10.14
+
+# Versión global
+pyenv global 3.12.3
+
+# Versión por proyecto
+cd /ruta/proyecto
+pyenv local 3.10.14
+python --version  # → 3.10.14 dentro del proyecto
+```
+
+
+
+### Comprobación post-instalación del runtime
+
+```shell
+python --version
+py --version
+python -m pip --version
+```
+
+---
+
+## 2. Gestores de paquetes y resolución de dependencias
+
+La instalación de librerías Python combina la selección de fuente (PyPI, conda-forge, OS) con la resolución de dependencias y el formato de distribución (wheel vs sdist).
+
+### 2.1 `pip`: estándar de facto
+
+`pip` es la herramienta estándar para instalar paquetes desde PyPI. ([pip.pypa.io][3])
+
+Uso recomendado:
+
+```bash
+python -m pip install requests
+python -m pip list
+python -m pip show requests
+python -m pip uninstall requests
+```
+
+**Pipeline de instalación con `pip`:**
+
+1. Resolver versiones (según restricciones de `requirements.txt` o `pyproject.toml`).
+2. Descargar un **wheel** compatible, si existe.
+3. Si no hay wheel compatible, descargar el **sdist**.
+4. Crear un entorno de build aislado (según `pyproject.toml`).
+5. Compilar extensiones C/C++ si es necesario.
+6. Instalar el resultado en el entorno actual (global o virtual).
+
+La compatibilidad de un wheel se resume en:
+
+$$
+W_{\text{tags}} \cap S_{\text{tags}} \neq \varnothing
+$$
+
+donde:
+
+- (W_{\text{tags}}): etiquetas soportadas por el wheel (`cp312-manylinux_x86_64`, etc.).
+- (S_{\text{tags}}): etiquetas soportadas por el sistema/interpretador (detectadas por `packaging.tags`). ([packaging.python.org][1])
+
+### 2.2 `conda` y `mamba`
+
+`conda` es un gestor de paquetes y entornos agnóstico del lenguaje:
+
+- Distribuye binarios precompilados que incluyen dependencias de sistema (BLAS, LAPACK, CUDA, etc.).
+- Usa un solucionador de dependencias de tipo SAT, robusto para grafos complejos.
+- Permite crear entornos con versiones específicas de Python y librerías. ([Conda Documentation][5])
+
+Ejemplo:
+
+```bash
+conda create -n ciencia python=3.12 numpy scipy pandas
+conda activate ciencia
+python -c "import sys, numpy; print(sys.version, numpy.__version__)"
+```
+
+`mamba` es una reimplementación de `conda` en C++ con resolución más rápida, usualmente compatible a nivel de CLI.
+
+### 2.3 Gestores del sistema (`apt`, `dnf`, `brew`, `choco`, `scoop`)
+
+Instalan paquetes Python como parte del sistema:
+
+```bash
+sudo apt install python3-requests
+sudo dnf install python3-requests
+brew install pyjwt  # algunos bindings Python empaquetados por Homebrew
+```
+
+!!! warning "Mezclar `pip` con paquetes del sistema"
+Instalar simultáneamente paquetes con `apt` y con `pip` sobre el mismo intérprete puede producir:
+
+```
+- Versiones incompatibles,
+- Archivos sobrescritos en `site-packages`,
+- Errores difíciles de depurar.
+
+En distribuciones modernas, PEP 668 bloquea esta práctica y obliga a usar entornos virtuales o `pipx`. :contentReference[oaicite:11]{index=11}
+```
+
+### 2.4 PEP 668: entornos externamente gestionados
+
+En Debian 12, Ubuntu recientes y otras distribuciones, Python está marcado como “externamente gestionado”:
+
+- `pip` no puede escribir en el entorno global y muestra el error:
+
+  ```text
+  error: externally-managed-environment
+  ```
+
+- La solución es:
+
+  - Crear un entorno virtual:
+
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    python -m pip install <paquete>
+    ```
+
+  - O usar `pipx` para aplicaciones de CLI:
+
+    ````bash
+    python -m pip install --user pipx
+    pipx install black
+    ``` :contentReference[oaicite:12]{index=12}
+    ````
+
+!!! info "Motivación de PEP 668"
+El objetivo es proteger la instalación del sistema contra un `pip install` accidental que rompa dependencias de paquetes de la distribución. El flujo recomendado es: **Python del sistema + entornos virtuales**.
+
+### 2.5 Herramientas de alto nivel: `pipx`, Poetry, PDM
+
+- **`pipx`**: instala aplicaciones Python de CLI en entornos aislados, ideal para linters, formatters, etc.
+- **Poetry / PDM**: gestionan dependencias y empaquetado a través de `pyproject.toml` y *lockfiles* reproducibles.
+- **`uv`** (de Astral): herramienta moderna para gestión rápida de entornos y dependencias.
+
+---
+
+## 3. Configuración del entorno y variables
+
+Una instalación correcta de Python depende tanto del runtime como de la forma en que el sistema resuelve ejecutables y módulos.
+
+### 3.1 PATH y resolución de ejecutables
+
+`PATH` es una lista ordenada de directorios:
+
+$$
+\text{PATH} = d_1 : d_2 : \dots : d_n
+$$
+
+Cuando el usuario escribe `python`:
+
+```text
+Usuario escribe: "python"
+      |
+      v
+[ d1 ]  --> ¿existe "python"?  --> NO
+      |
+      v
+[ d2 ]  --> ¿existe "python"?  --> SÍ → EJECUTAR y DETENER
+      |
+      v
+[ d3 ]  (ya no se revisa)
+```
+
+#### Ejemplo: priorizar un Python alternativo (Linux/macOS)
+
+```bash
+# Python del sistema en /usr/bin/python3
+which python3
+# → /usr/bin/python3
+
+# Python alternativo en /opt/python3.11/bin
+export PATH="/opt/python3.11/bin:$PATH"
+
+which python3
+# → /opt/python3.11/bin/python3
+python3 -c "import sys; print(sys.executable)"
+```
+
+En Windows el orden de búsqueda lo da el `PATH` de Variables de Entorno del sistema/usuario.
+
+!!! info "Inspeccionar el intérprete real desde Python"
+`bash
+    python -c "import sys; print(sys.executable); print(*sys.path, sep='\n')"
+    `
+Esto permite ver qué intérprete está en uso y qué rutas se están usando para `import`. ([Python documentation][7])
+
+### 3.2 Variables de entorno críticas en Python
+
+Tabla de variables relevantes:
+
+| Variable                  | Descripción técnica                                     | Uso recomendado                              |
+| ------------------------- | ------------------------------------------------------- | -------------------------------------------- |
+| `PATH`                    | Rutas donde el sistema busca ejecutables.               | Controlar qué `python`/`pip` se ejecuta.     |
+| `PYTHONPATH`              | Se añade a `sys.path`.                                  | Solo en desarrollo puntual; cuidado en prod. |
+| `PYTHONHOME`              | Fuerza la ubicación de la stdlib.                       | Embebido/entornos muy controlados.           |
+| `PYTHONDONTWRITEBYTECODE` | Evita generar `.pyc` en `__pycache__`.                  | Útil en Docker para reducir ruido de I/O.    |
+| `VIRTUAL_ENV`             | Ruta del entorno virtual activo (`venv`, `virtualenv`). | Se establece automáticamente al activar.     |
+| `CONDA_PREFIX`            | Ruta del entorno `conda` activo.                        | Diagnóstico en entornos `conda`.             |
+
+Configurar `PYTHONHOME` o `PYTHONPATH` incorrectamente puede hacer que Python no encuentre su propia stdlib.
+
+### 3.3 Múltiples versiones instaladas
+
+Es habitual tener varias versiones de Python:
+
+- **Linux/Unix:**
+
+  - `python3.10`, `python3.12` instalados simultáneamente.
+  - Alias en shell:
+
+    ```bash
+    alias python=python3.12
+    ```
+
+- **Windows:**
+
+  - `py` dirige a la versión adecuada:
+
+    ```powershell
+    py -3.10 script.py
+    py -3.12 script.py
+    ```
+
+- **`conda`:**
+
+  - Cada entorno define su propia versión de Python:
+
+    ```bash
+    conda create -n py310 python=3.10
+    conda create -n py312 python=3.12
+    ```
+
+!!! warning "Colisión entre `python` y `pip`"
+Cuando existen varios runtimes (python.org, Anaconda, Homebrew, `pyenv`), es fácil terminar con:
+
+```
+- `python` apuntando a un runtime,
+- `pip` apuntando a otro.
+
+Mantener la disciplina de usar **`python -m pip`** reduce esta clase de errores. :contentReference[oaicite:14]{index=14}
+```
+
+### 3.4 Verificación post-instalación
+
+Check-list rápida:
+
+1. Comprobar versión y ruta:
+
+   ```bash
+   python --version
+   python -c "import sys; print(sys.executable)"
+   ```
+
+2. Verificar `pip`:
+
+   ```bash
+   python -m pip --version
+   ```
+
+3. Crear un entorno virtual:
+
+   ```bash
+   python -m venv .test-env
+   source .test-env/bin/activate  # Linux/macOS
+   # .\.test-env\Scripts\Activate.ps1  # Windows
+   python -m pip install requests
+   ```
+
+4. Probar import básico:
+
+   ```bash
+   python -c "import requests; print(requests.__version__)"
+   ```
+
+Si todo funciona sin errores, la combinación runtime + PATH + `pip` está operativa.
+
+---
+
+## 4. Instalación de toolchains y compilación de extensiones
+
+Cuando no hay wheel compatible, `pip` debe compilar desde sdist, lo que activa el toolchain de C/C++.
+
+### 4.1 Componentes de un toolchain para Python
+
+Para compilar extensiones y construir wheels se requiere:
+
+- **Compilador C/C++**: `gcc`, `clang`, `cl.exe`.
+- **Headers de Python**: proveen `Python.h` (`python3-dev`, `python3-devel`).
+- **Librerías de desarrollo adicionales**: `libssl-dev`, `libffi-dev`, etc. según el paquete.
+
+Sin alguno de estos elementos, se obtendrán errores como:
+
+```text
+fatal error: Python.h: No such file or directory
+error: Microsoft Visual C++ 14.0 or greater is required
+```
+
+### 4.2 Toolchains por sistema operativo
+
+#### Linux (Debian/Ubuntu)
+
+```bash
+sudo apt update
+sudo apt install build-essential python3-dev python3-venv
+```
+
+#### Fedora / RHEL
+
+```bash
+sudo dnf groupinstall "Development Tools"
+sudo dnf install python3-devel
+```
+
+#### Arch Linux
+
+```bash
+sudo pacman -S base-devel python
+```
+
+#### macOS
+
+```bash
+xcode-select --install  # Xcode Command Line Tools
+```
+
+Opcionalmente, instalar dependencias:
+
+```bash
+brew install openssl sqlite
+```
+
+#### Windows
+
+- Instalar **Python** desde `python.org`.
+- Instalar **Microsoft Visual C++ Build Tools** o Visual Studio Community con el workload *Desktop development with C++*.
+- Probar:
+
+  ```powershell
+  python -m pip install --upgrade pip setuptools wheel
+  python -m pip install ujson
+  ```
+
+Si compila e instala, el toolchain está alineado con el ABI de Python. ([packaging.python.org][1])
+
+### 4.3 Proceso interno de construcción de wheels
+
+Cuando se ejecuta:
+
+```bash
+python -m pip install paquete --no-binary :all:
+```
+
+`pip` fuerza el uso de sdist y realiza:
+
+1. Descarga del sdist (`.tar.gz`/`.zip`).
+2. Creación de entorno de build aislado (según `pyproject.toml` y PEP 517).
+3. Instalación de herramientas de build (por ejemplo, `setuptools`, `wheel`, `cython`).
+4. Llamada al compilador:
+
+   - Linux: `gcc ... -c ... -o ...`
+   - macOS: `clang ...`
+   - Windows: `cl.exe ...`
+5. Enlazado de librería compartida (`.so`, `.dylib`, `.pyd`).
+6. Generación del wheel local e instalación.
+
+Ejemplo de diagnóstico (Linux):
+
+```bash
+python -m pip install psutil --no-binary :all: --verbose
+```
+
+En el output se pueden buscar líneas que comiencen con `gcc` o `clang` para confirmar que el compilador se está invocando correctamente.
+
+### 4.4 Diagnóstico de errores típicos
+
+**Caso 1: falta de headers**
+
+```text
+fatal error: Python.h: No such file or directory
+```
+
+Solución:
+
+```bash
+sudo apt install python3-dev  # o python3-devel según distro
+```
+
+**Caso 2: falta de compilador (Linux/macOS)**
+
+```text
+error: command 'gcc' failed with exit status 1
+```
+
+Solución:
+
+```bash
+sudo apt install build-essential   # Debian/Ubuntu
+# o
+xcode-select --install             # macOS
+```
+
+**Caso 3: MSVC ausente (Windows)**
+
+```text
+error: Microsoft Visual C++ 14.0 or greater is required
+```
+
+Solución:
+
+- Instalar *Build Tools for Visual Studio* o Visual Studio Community con C++.
+- Abrir un “Developer Command Prompt” o terminal con las variables de entorno adecuadas.
+
+---
+
+## 5. Ejercicios
+
+1. **Inspección del entorno de ejecución:**
+   Escribe un script Python que imprima:
+
+   - Ruta absoluta del ejecutable (`sys.executable`),
+   - Versión completa de Python (`sys.version`),
+   - Todas las entradas de `sys.path`.
+
+2. **Prioridad de PATH con dos versiones de Python:**
+   Supón que tienes `python3.10` en `/usr/bin/python3.10` y `python3.12` en `/opt/python3.12/bin/python3.12`. Describe:
+
+   - Cómo está compuesto el `PATH` antes y después de anteponer `/opt/python3.12/bin`.
+   - Qué versión se ejecuta al llamar `python3` antes y después del cambio.
+
+3. **Aislamiento de dependencias con `venv`:**
+   Crea un entorno virtual y:
+
+   - Instala `requests==2.0.0`.
+   - Verifica la versión dentro del entorno.
+   - Comprueba qué ocurre al intentar importar `requests` fuera del entorno (en el intérprete global).
+
+4. **Entornos con `conda` y versiones de Python:**
+   Usando `conda`, crea dos entornos:
+
+   - Uno con Python 3.10 y `numpy`/`pandas`.
+   - Otro con Python 3.12 y potencialmente otras versiones de `numpy`/`pandas`.
+     Describe los comandos usados y cómo verificas que cada entorno tiene las versiones correctas.
+
+5. **Compilación desde sdist y diagnóstico de toolchain:**
+   En Linux o macOS, ejecuta:
+
+   ```bash
+   python -m pip install ujson --no-binary :all: --verbose
+   ```
+
+   Explica:
+
+   - Qué indicador en el output demuestra que el compilador se está ejecutando.
+   - Qué tipo de error verías si faltara `Python.h` o el compilador.
+   - Qué paquetes del sistema instalarías para solucionarlo.
+
+---
+
+## Soluciones
+
+<details>
+<summary>Ver solución ejercicio 1</summary>
+
+**Objetivo:** Identificar ejecutable, versión y rutas de importación.
+
+Código:
+
+```python
+import sys
+
+print(f"Ejecutable: {sys.executable}")
+print(f"Versión completa:\n{sys.version}")
+print("Rutas de búsqueda (sys.path):")
+for p in sys.path:
+    print(" -", p)
+```
+
+**Interpretación:**
+
+- `sys.executable` muestra el binario real (por ejemplo, dentro de `.venv/bin/python` o `/usr/bin/python3`).
+- `sys.version` incluye versión, compilador y fecha de compilación.
+- `sys.path` indica el orden en el que Python buscará módulos, comenzando por el directorio del script o `''` (directorio actual).
+
+Esto permite verificar si se está usando el entorno virtual esperado (`VIRTUAL_ENV`) o un runtime del sistema.
+
+</details>
+
+---
+
+<details>
+<summary>Ver solución ejercicio 2</summary>
+
+**Situación:**
+
+- Versión 3.10 en `/usr/bin/python3.10`.
+- Versión 3.12 en `/opt/python3.12/bin/python3.12`.
+
+**Antes de modificar `PATH`:**
+
+Supongamos un `PATH` típico:
+
+```text
+PATH=/usr/local/bin:/usr/bin:/bin
+```
+
+- `which python3` → `/usr/bin/python3`
+- Si `python3` es un symlink a `python3.10`, entonces:
+
+  ```bash
+  python3 --version  # → 3.10.x
+  ```
+
+**Después de anteponer `/opt/python3.12/bin`:**
+
+```bash
+export PATH="/opt/python3.12/bin:$PATH"
+```
+
+Nuevo `PATH`:
+
+```text
+PATH=/opt/python3.12/bin:/usr/local/bin:/usr/bin:/bin
+```
+
+Resolución:
+
+1. El sistema busca `python3` en `/opt/python3.12/bin`:
+
+   - Encuentra `/opt/python3.12/bin/python3` → lo ejecuta.
+2. No revisa `/usr/bin` porque ya encontró un binario.
+
+Verificación:
+
+```bash
+which python3           # → /opt/python3.12/bin/python3
+python3 --version       # → 3.12.x
+```
+
+La versión del sistema (3.10) sigue instalada, pero ya no es la predeterminada para esa sesión de shell.
+
+</details>
+
+---
+
+<details>
+<summary>Ver solución ejercicio 3</summary>
+
+**Pasos:**
+
+1. Crear entorno virtual:
+
+   ```bash
+   python3 -m venv env_prueba
+   ```
+
+2. Activar entorno:
+
+   - Linux/macOS:
+
+     ```bash
+     source env_prueba/bin/activate
+     ```
+
+   - Windows (PowerShell):
+
+     ```powershell
+     .\env_prueba\Scripts\Activate.ps1
+     ```
+
+   El prompt debería mostrar `(env_prueba)`.
+
+3. Instalar `requests==2.0.0`:
+
+   ```bash
+   python -m pip install "requests==2.0.0"
+   ```
+
+4. Verificar la versión:
+
+   ```bash
+   python -c "import requests; print(requests.__version__)"
+   # → 2.0.0
+   ```
+
+5. Desactivar entorno:
+
+   ```bash
+   deactivate
+   ```
+
+6. Probar en el intérprete global:
+
+   ```bash
+   python3 -c "import requests; print(requests.__version__)"
+   ```
+
+   - Si falla con `ModuleNotFoundError`, el entorno global no tiene `requests`.
+   - Si muestra otra versión, demuestra que las dependencias del entorno virtual están aisladas del sistema.
+
+**Conclusión:** Los entornos virtuales permiten fijar versiones específicas de dependencias sin afectar ni ser afectados por el entorno global.
+
+</details>
+
+---
+
+<details>
+<summary>Ver solución ejercicio 4</summary>
+
+**Objetivo:** Crear dos entornos `conda` con versiones distintas de Python y librerías.
+
+1. Crear entorno con Python 3.10:
+
+   ```bash
+   conda create -n py310-env python=3.10
+   conda activate py310-env
+   conda install numpy=1.26 pandas=2.1  # versiones de ejemplo
+   ```
+
+2. Verificar:
+
+   ```bash
+   python -c "import sys, numpy, pandas; print(sys.version); print(numpy.__version__, pandas.__version__)"
+   ```
+
+   Debe mostrar Python 3.10.x y las versiones de `numpy` y `pandas` instaladas.
+
+3. Crear entorno con Python 3.12:
+
+   ```bash
+   conda create -n py312-env python=3.12
+   conda activate py312-env
+   conda install numpy=2.0 pandas=2.2  # versiones de ejemplo
+   ```
+
+4. Verificar de forma análoga:
+
+   ```bash
+   python -c "import sys, numpy, pandas; print(sys.version); print(numpy.__version__, pandas.__version__)"
+   ```
+
+**Claves:**
+
+- Cada entorno tiene su propio runtime de Python y sus paquetes.
+- Cambiar de entorno con `conda activate`/`conda deactivate` cambia simultáneamente:
+
+  - El `PATH`,
+  - `CONDA_PREFIX`,
+  - El intérprete que se invoca como `python`. ([Conda Documentation][5])
+
+</details>
+
+---
+
+<details>
+<summary>Ver solución ejercicio 5</summary>
+
+**Comando:**
+
+```bash
+python -m pip install ujson --no-binary :all: --verbose
+```
+
+1. **Evidencia de que el compilador se ejecuta:**
+
+   En el output veremos líneas similares a:
+
+   ```text
+   running build_ext
+   building 'ujson' extension
+   gcc -Wno-unused-result -Wsign-compare ... -c ujson.c -o build/temp.linux-x86_64-3.12/ujson.o
+   gcc ... -shared build/temp.linux-x86_64-3.12/ujson.o -o build/lib.linux-x86_64-3.12/ujson.cpython-312-x86_64-linux-gnu.so
+   ```
+
+   o, en macOS, llamadas a `clang`, y en Windows, a `cl.exe`.
+
+2. **Tipo de error si falta `Python.h` o el compilador:**
+
+   - Sin headers de Python:
+
+     ```text
+     ujson.c:10:10: fatal error: Python.h: No such file or directory
+     compilation terminated.
+     error: command 'gcc' failed with exit status 1
+     ```
+
+   - Sin compilador:
+
+     ```text
+     error: command 'gcc' failed: No such file or directory
+     ```
+
+3. **Paquetes del sistema necesarios:**
+
+   - Debian/Ubuntu:
+
+     ```bash
+     sudo apt install build-essential python3-dev
+     ```
+
+   - Fedora/RHEL:
+
+     ```bash
+     sudo dnf groupinstall "Development Tools"
+     sudo dnf install python3-devel
+     ```
+
+   - macOS:
+
+     ```bash
+     xcode-select --install
+     ```
+
+4. **Verificación posterior:**
+
+   Repetir:
+
+   ```bash
+   python -m pip install ujson --no-binary :all:
+   ```
+
+   Si se construye e instala sin errores, el toolchain está correctamente configurado.
+
+</details>
+
+---
+
+## Referencias y lectura adicional
+
+1. Python Software Foundation, *12. Entornos virtuales y paquetes* (documentación oficial, módulo `venv`). ([Python documentation][2])
+2. Python Packaging Authority (PyPA), *Python Packaging User Guide* (PyPUG): empaquetado, wheels, `pip`, `setuptools`. ([packaging.python.org][1])
+3. PyPA, *Installing packages* y *pip User Guide*, documentación oficial de `pip`. ([pip.pypa.io][3])
+4. PEP 668 – *Marking Python base environments as “externally managed”*, Python Enhancement Proposal. ([Python Enhancement Proposals (PEPs)][4])
+5. Conda Documentation, *Managing environments* y guías de entornos. ([Conda Documentation][5])
+6. Real Python, *Python Virtual Environments: A Primer*. ([realpython.com][8])
+
+[1]: https://packaging.python.org/ "Python Packaging User Guide"
+[2]: https://docs.python.org/3/library/venv.html "venv — Creation of virtual environments"
+[3]: https://pip.pypa.io/en/latest/user_guide/ "User Guide - pip documentation v26.0.dev0"
+[4]: https://peps.python.org/pep-0668/ "PEP 668 – Marking Python base environments as “ ..."
+[5]: https://docs.conda.io/docs/user-guide/tasks/manage-environments.html "Managing environments — conda 25.9.2.dev61 ..."
+[6]: https://pypi.org/help/ "Help"
+[7]: https://docs.python.org/3/tutorial/venv.html "12. Virtual Environments and Packages"
+[8]: https://realpython.com/python-virtual-environments-a-primer/ "Python Virtual Environments: A Primer"

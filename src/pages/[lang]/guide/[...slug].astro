@@ -1,0 +1,50 @@
+---
+import { getCollection, render } from "astro:content";
+
+import GuideLayout from "@/layouts/guide.astro";
+import { buildToc, type AstroHeading } from "@/utils/guideToc";
+import { buildGuideTree, type GuideTree } from "@/utils/guideTree";
+
+// Generate static paths for all guide entries
+export async function getStaticPaths() {
+  const all = await getCollection("guide", ({ data }) => !data.draft);
+
+  // Generate paths for each entry
+  return all.map((entry) => {
+    const id = entry.id.replace(/[0-9]+\-/g,"").replace(/\.mdx?$/, "");
+    console.log("Generated id:", id);
+    const parts = id.split("/");
+
+    const lang = parts[0];
+    const slugRaw = parts.slice(1).join("/");
+
+    const slug = slugRaw === "" ? undefined : slugRaw;
+
+    return {
+      params: { lang, slug },
+      props: { entry },
+    };
+  });
+}
+
+// From here, build the page
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const { title, description } = entry.data;
+
+const { lang } = Astro.params;
+
+// Build the navigation tree
+const all = await getCollection("guide", ({ data }) => !data.draft);
+const tree: GuideTree = buildGuideTree(all, lang);
+
+// Build the TOC
+const filtered = headings.filter(
+  (h: AstroHeading) => h.depth >= 2 && h.depth <= 4
+);  
+const toc = buildToc(filtered);
+---
+
+<GuideLayout title={title} description={description} toc={toc} tree={tree}>
+  <Content />
+</GuideLayout>

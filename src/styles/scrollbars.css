@@ -1,0 +1,20 @@
+/* Firefox */
+:root {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120 120 120 / 0.45) transparent;
+}
+
+/* WebKit (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(120 120 120 / 0.45);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}

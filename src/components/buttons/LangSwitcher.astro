@@ -1,0 +1,81 @@
+---
+import { LanguagesIcon } from "@lucide/astro/icons";
+---
+
+<div class="relative">
+  <button
+    type="button"
+    data-lang-toggle
+    class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-input shadow-sm hover:bg-accent hover:text-accent-foreground"
+    aria-haspopup="menu"
+    aria-expanded="false"
+  >
+    <LanguagesIcon class="h-4 w-4" />
+    <span class="sr-only">Cambiar idioma</span>
+  </button>
+
+  <div
+    data-lang-menu
+    class="absolute right-0 mt-2 w-32 origin-top-right rounded-md border border-border bg-popover p-1 text-sm shadow-md hidden"
+    role="menu"
+  >
+    <button
+      type="button"
+      class="flex w-full items-center rounded-md px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground"
+      data-lang-option="es"
+      role="menuitem"
+    >
+      ES (Español)
+    </button>
+    <button
+      type="button"
+      class="flex w-full items-center rounded-md px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground"
+      data-lang-option="en"
+      role="menuitem"
+    >
+      EN (English)
+    </button>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    const langBtn = document.querySelector("[data-lang-toggle]");
+    const langMenu = document.querySelector("[data-lang-menu]");
+    if (!langBtn || !langMenu) return;
+
+    function closeMenu() {
+      langMenu.classList.add("hidden");
+      langBtn.setAttribute("aria-expanded", "false");
+    }
+
+    langBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isHidden = langMenu.classList.contains("hidden");
+      if (isHidden) {
+        langMenu.classList.remove("hidden");
+        langBtn.setAttribute("aria-expanded", "true");
+      } else {
+        closeMenu();
+      }
+    });
+
+    langMenu.addEventListener("click", (e) => {
+      const target = e.target.closest("[data-lang-option]");
+      if (!target) return;
+      const lang = target.getAttribute("data-lang-option");
+      console.log("Set language:", lang);
+      // TODO: aquí puedes:
+      // - cambiar window.location a /lang/...
+      // - setear cookie
+      // - usar alguna store global, etc.
+      closeMenu();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!langMenu.contains(e.target) && !langBtn.contains(e.target)) {
+        closeMenu();
+      }
+    });
+  })();
+</script>

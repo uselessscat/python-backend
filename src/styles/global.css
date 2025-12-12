@@ -1,0 +1,97 @@
+@import "tailwindcss";
+@import "@/styles/scrollbars.css";
+
+@source "./src";
+
+@tailwind utilities;
+
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "Cousine", ui-monospace, SFMono-Regular, monospace;
+
+  --color-brand-50: #ecf9ff;
+  --color-brand-100: #d9f3ff;
+  --color-brand-200: #b0e4ff;
+  --color-brand-300: #7ed0ff;
+  --color-brand-400: #36b0ff;
+  --color-brand-500: #0d8fe6;
+  --color-brand-600: #0070b8;
+  --color-brand-700: #00588f;
+  --color-brand-800: #00446f;
+  --color-brand-900: #003456;
+}
+
+@layer base {
+  :root {
+    /* Light by default */
+    color-scheme: light;
+
+    --header-offset: 5.5rem;
+  }
+
+  html {
+    @apply h-full;
+
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-slate-50 text-slate-900 antialiased;
+  }
+
+  /* When <html> has .dark, activate dark theme */
+  .dark body {
+    @apply bg-slate-950 text-slate-50;
+  }
+
+  .prose :where(h1, h2, h3, h4, h5, h6) {
+    scroll-margin-top: var(--header-offset);
+  }
+}
+
+/* Background general of the app */
+@utility bg-background {
+  @apply bg-slate-50 dark:bg-slate-950;
+}
+
+/* Main text */
+@utility text-foreground {
+  @apply text-slate-900 dark:text-slate-50;
+}
+
+/* Main surface (cards, header, central panel) */
+@utility bg-surface {
+  @apply bg-white dark:bg-slate-900;
+}
+
+/* Soft surface (chips, bars, subtle backgrounds) */
+@utility bg-muted {
+  @apply bg-slate-100 dark:bg-slate-800;
+}
+
+@utility text-muted-foreground {
+  @apply text-slate-500 dark:text-slate-400;
+}
+
+/* Popovers / dropdowns / floating menus */
+@utility bg-popover {
+  @apply bg-white dark:bg-slate-900;
+}
+
+@utility text-popover-foreground {
+  @apply text-slate-900 dark:text-slate-50;
+}
+
+/* Generic borders */
+@utility border-border {
+  @apply border-slate-200 dark:border-slate-800;
+}
+
+/* Input borders */
+@utility border-input {
+  @apply border-slate-300 dark:border-slate-700;
+}

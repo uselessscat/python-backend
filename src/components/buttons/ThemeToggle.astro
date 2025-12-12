@@ -1,0 +1,70 @@
+---
+import { MoonIcon, SunIcon, SunMoonIcon } from "@lucide/astro/icons";
+---
+
+<button
+  type="button"
+  data-theme-toggle
+  class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-input shadow-sm hover:bg-accent hover:text-accent-foreground"
+  aria-label="Cambiar tema"
+>
+  <SunMoonIcon data-theme-icon="system" class="h-4 w-4 hidden" />
+  <SunIcon data-theme-icon="light" class="h-4 w-4 hidden" />
+  <MoonIcon data-theme-icon="dark" class="h-4 w-4 hidden" />
+</button>
+
+<script is:inline>
+  (function () {
+    const btn = document.querySelector("[data-theme-toggle]");
+    if (!btn) return;
+
+    const icons = {
+      light: document.querySelector('[data-theme-icon="light"]'),
+      dark: document.querySelector('[data-theme-icon="dark"]'),
+      system: document.querySelector('[data-theme-icon="system"]'),
+    };
+
+    const ORDER = ["light", "dark", "system"];
+    const storageKey = "se-theme";
+
+    function getSystemPref() {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    }
+
+    function applyTheme(theme) {
+      const root = document.documentElement;
+      const realTheme = theme === "system" ? getSystemPref() : theme;
+
+      if (realTheme === "dark") {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+
+      Object.entries(icons).forEach(([key, el]) => {
+        if (!el) return;
+        el.classList.toggle("hidden", key !== theme);
+      });
+    }
+
+    let current =
+      (typeof localStorage !== "undefined" &&
+        (localStorage.getItem(storageKey) || "system")) ||
+      "system";
+
+    if (!ORDER.includes(current)) current = "system";
+
+    applyTheme(current);
+
+    btn.addEventListener("click", () => {
+      const idx = ORDER.indexOf(current);
+      current = ORDER[(idx + 1) % ORDER.length];
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem(storageKey, current);
+      }
+      applyTheme(current);
+    });
+  })();
+</script>

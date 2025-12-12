@@ -1,0 +1,18 @@
+---
+import TocList from "@/components/toc/TocList.astro";
+
+const { items } = Astro.props;
+---
+
+<aside class="hidden md:block text-xs text-muted-foreground">
+  {
+    items.length > 0 ? (
+      <nav class="sticky top-24 space-y-2 overflow-y-auto max-h-[calc(100vh-7rem)] pr-2">
+        <p class="text-sm font-bold mb-1">Contenido de la página</p>
+        <TocList items={items} />
+      </nav>
+    ) : (
+      <p class="text-sm font-bold mb-1">Sin secciones</p>
+    )
+  }
+</aside>

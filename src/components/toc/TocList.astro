@@ -1,0 +1,23 @@
+---
+import type { TocItem } from "@/utils/guideToc";
+
+const { items } = Astro.props as { items: TocItem[] };
+---
+
+<ul class="space-y-1">
+  {
+    items.map((item) => (
+      <li>
+        <a
+          href={`#${item.slug}`}
+          class="block hover:underline text-sm"
+          style={`padding-left:${(item.depth - 2) * 12}px`}
+        >
+          {item.text}
+        </a>
+
+        {item.children.length > 0 && <Astro.self items={item.children} />}
+      </li>
+    ))
+  }
+</ul>

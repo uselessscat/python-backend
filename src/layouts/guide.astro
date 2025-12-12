@@ -1,0 +1,59 @@
+---
+import "katex/dist/katex.min.css";
+import "@/styles/global.css";
+
+import { type GuideTocItem } from "@/utils/guideToc";
+import { type GuideTree } from "@/utils/guideTree";
+
+import GuideHeader from "@/components/guide/Header.astro";
+import GuideFooter from "@/components/guide/Footer.astro";
+import GuideNavTree from "@/components/nav-tree/NavTree.astro";
+import GuideToc from "@/components/toc/Toc.astro";
+
+const {
+  title = "Software engineering",
+  description = "Apuntes, diagramas y notas de ingeniería de software.",
+  tree = {},
+  toc = [],
+} = Astro.props as {
+  title?: string;
+  description?: string;
+  tree?: GuideTree;
+  toc?: GuideTocItem[];
+};
+---
+
+<html lang="es" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <link rel="icon" type="image/png" href="/favicon.png" />
+  </head>
+
+  <body class="min-h-screen flex flex-col font-sans">
+    <GuideHeader />
+
+    <main class="flex-1">
+      <div
+        class="mx-auto container grid grid-cols-[1fr_3fr_1fr] gap-4 px-3 py-6 md:px-4 md:py-8"
+      >
+        <GuideNavTree tree={tree} />
+
+        <!-- Main content here -->
+        <section class="col-span-3 md:col-span-1 min-w-0">
+          <article class="prose prose-slate dark:prose-invert max-w-none">
+            <slot />
+          </article>
+        </section>
+
+        <GuideToc items={toc} />
+      </div>
+    </main>
+
+    <GuideFooter />
+  </body>
+</html>

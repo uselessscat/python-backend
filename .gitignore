@@ -1,19 +1,15 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
+# build output
 dist/
-wheels/
-*.egg-info
 
-# Virtual environments
-.venv
+# generated types
+.astro/
 
-# Tools
-.mypy_cache/
+# dependencies
+node_modules/
 
-# Generated
-site/
+# environment variables
+.env
+.env.production
 
-# OS
+# macOS-specific files
 .DS_Store

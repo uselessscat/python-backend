@@ -1,0 +1,12 @@
+---
+import { Github } from "@lucide/astro/icons";
+---
+
+<button
+  type="button"
+  class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-input shadow-sm hover:bg-accent hover:text-accent-foreground"
+  aria-label="Ir al repositorio en GitHub"
+  onclick="window.open('https://github.com/uselessscat/tu-repo', '_blank')"
+>
+  <Github class="h-4 w-4" />
+</button>

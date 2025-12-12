@@ -1,0 +1,24 @@
+---
+import type { GuideTree } from "@/utils/guideTree";
+import GuideNavTreeNodes from "./Nodes.astro";
+
+const { tree } = Astro.props as { tree: GuideTree };
+
+const currentPath = Astro.url.pathname;
+---
+
+{
+  tree.length === 0 ? (
+    <aside class="hidden md:block text-xs text-muted-foreground">
+      <p class="text-muted-foreground/70">Sin índice</p>
+    </aside>
+  ) : (
+    <aside class="hidden md:block text-xs text-muted-foreground">
+      <nav class="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 scroll-rail-hide">
+        <ul class="space-y-1">
+          <GuideNavTreeNodes nodes={tree} level={0} currentPath={currentPath} />
+        </ul>
+      </nav>
+    </aside>
+  )
+}
