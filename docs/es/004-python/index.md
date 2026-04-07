@@ -421,6 +421,7 @@
          18. Compatibility / Cross-env Testing (`venv`, `tox`)
          19. Smoke / Sanity Testing (`unittest`, `pytest`)
          20. Accessibility Testing (`unittest`, `playwright`)
+         21. Mutation Testing (`cosmic-ray`, `mutmut`)
       4. Fixtures and parametrization
          1. Test Lifecycle Hooks (`unittest` setUp/tearDown, `pytest`)
          2. Fixture Scopes (`unittest` class/module, `pytest` function/class/module/session)
